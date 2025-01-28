@@ -1,22 +1,26 @@
 from flask import Flask, jsonify, request
 from flask_sqlalchemy import SQLAlchemy
+import os
 from flask_migrate import Migrate
 from flask_cors import CORS
 
 app = Flask(__name__)
 CORS(app)
 
-app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql://flaskuser:flaskpassword@localhost:5432/flaskdb'
+app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql://flaskuser:flaskpassword@localhost:5433/flaskdb'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
 # Banco de dados em memória (pode ser substituído por um banco real, como SQLite, MySQL, etc.)
 db = SQLAlchemy(app)
-migrate = Migrate(app, db)
+
 
 class Item(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(100), nullable=False)
     price = db.Column(db.Float, nullable=False)
+
+    def __repr__(self):
+        return f'<Item {self.name}>'
 
     def to_dict(self):
         return {
@@ -25,8 +29,20 @@ class Item(db.Model):
             "price": self.price
         }
 
-# Create
-@app.route('/items', methods=['POST'])
+# Criação do banco ao iniciar
+with app.app_context():
+    if not os.path.exists('app.db'):
+        db.create_all()
+        print("Base de dados criada!")
+
+
+# Rota para teste
+@app.route('/')
+def home():
+    return "Bem-vindo à aplicação!"
+
+
+@app.route('/items/create', methods=['POST'])
 def create_item():
     data = request.get_json()
     if not data or 'name' not in data or 'price' not in data:
@@ -37,12 +53,16 @@ def create_item():
     return jsonify(new_item.to_dict()), 201
 
 # Read
+
+
 @app.route('/items', methods=['GET'])
 def get_items():
     items = Item.query.all()
     return jsonify([item.to_dict() for item in items]), 200
 
 # Read by ID
+
+
 @app.route('/items/<int:item_id>', methods=['GET'])
 def get_item(item_id):
     item = Item.query.get(item_id)
@@ -51,7 +71,9 @@ def get_item(item_id):
     return jsonify(item.to_dict()), 200
 
 # Update
-@app.route('/items/<int:item_id>', methods=['PUT'])
+
+
+@app.route('/items/update/<int:item_id>', methods=['PUT'])
 def update_item(item_id):
     data = request.get_json()
     item = Item.query.get(item_id)
@@ -67,7 +89,9 @@ def update_item(item_id):
     return jsonify(item.to_dict()), 200
 
 # Delete
-@app.route('/items/<int:item_id>', methods=['DELETE'])
+
+
+@app.route('/items/delete/<int:item_id>', methods=['DELETE'])
 def delete_item(item_id):
     item = Item.query.get(item_id)
     if not item:
@@ -80,5 +104,3 @@ def delete_item(item_id):
 
 if __name__ == '__main__':
     app.run(debug=True)
-
-    

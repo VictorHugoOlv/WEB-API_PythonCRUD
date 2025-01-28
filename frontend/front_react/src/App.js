@@ -21,7 +21,7 @@ function App() {
 
   const handleCreateItem = (e) => {
     e.preventDefault();
-    fetch('http://localhost:5000/items', {
+    fetch('http://localhost:5000/items/create', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(newItem),
@@ -38,7 +38,7 @@ function App() {
   };
 
   const handleDeleteItem = (id) => {
-    fetch(`http://localhost:5000/items/${id}`, {
+    fetch(`http://localhost:5000/items/delete/${id}`, {
       method: 'DELETE',
     })
       .then((response) => {
@@ -54,7 +54,7 @@ function App() {
 
   const handleUpdateItem = (e) => {
     e.preventDefault();
-    fetch(`http://localhost:5000/items/${editingItem.id}`, {
+    fetch(`http://localhost:5000/items/update/${editingItem.id}`, {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(editingItem)
@@ -116,6 +116,7 @@ function App() {
         <ul>
           {items.map((item) => (
             <li key={item.id}>
+              {item.id}{" - "}
               {item.name} - ${item.price} { }
               <button onClick={() => handleEditItem(item)}>Editar</button>
               <button onClick={() => handleDeleteItem(item.id)}>Deletar</button>
